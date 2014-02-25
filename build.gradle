@@ -8,3 +8,7 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'org.apache.httpcomponents:httpclient:4.3.2'
 }
+
+if (new File('lib/private.build.gradle').exists() || new File('/private.build.gradle').exists()) {
+    apply from: '/private.build.gradle'
+}
