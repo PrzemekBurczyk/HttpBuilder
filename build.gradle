@@ -1,4 +1,6 @@
 apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 repositories {
     mavenCentral()
@@ -9,6 +11,66 @@ dependencies {
     compile 'org.apache.httpcomponents:httpclient:4.3.2'
 }
 
-if (new File('lib/private.build.gradle').exists() || new File('/private.build.gradle').exists()) {
-    apply from: '/private.build.gradle'
+group = 'pl.sigmapoint'
+version = '0.1'
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+artifacts {
+    archives jar
+
+    archives javadocJar
+    archives sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            pom.project {
+                name 'HttpBuilder'
+                packaging 'jar'
+                description 'HttpBuilder is a library supporting http request building process.'
+                url 'https://github.com/PrzemekBurczyk/HttpBuilder'
+
+                scm {
+                    url 'scm:git@github.com:PrzemekBurczyk/HttpBuilder.git'
+                    connection 'scm:git@github.com:PrzemekBurczyk/HttpBuilder.git'
+                    developerConnection 'scm:git@github.com:PrzemekBurczyk/HttpBuilder.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'przemek.burczyk'
+                        name 'Przemyslaw Burczyk'
+                    }
+                }
+            }
+        }
+    }
 }
